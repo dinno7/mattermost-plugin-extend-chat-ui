@@ -1,4 +1,4 @@
-module github.com/mattermost/mattermost-plugin-starter-template
+module github.com/dinno7/mattermost-plugin-extend-chat-ui
 
 go 1.24.3
 

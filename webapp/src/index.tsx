@@ -1,24 +1,52 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import manifest from "./manifest";
 
-import type {Store, Action} from 'redux';
+import "./style.scss";
 
-import type {GlobalState} from '@mattermost/types/store';
+function detectDarkTheme() {
+  const el = document.getElementById("app-content");
+  if (el === null) {
+    return;
+  }
+  const rgb = getComputedStyle(el)
+    .backgroundColor.split("(")[1]
+    .split(")")[0]
+    .split(", ")
+    .map(Number);
+  const luma = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  if (luma < 140) {
+    document.body.classList.remove("mm-chat-ui--light-theme");
+    document.body.classList.add("mm-chat-ui--dark-theme");
+  } else {
+    document.body.classList.remove("mm-chat-ui--dark-theme");
+    document.body.classList.add("mm-chat-ui--light-theme");
+  }
+}
 
-import manifest from '@/manifest';
-import type {PluginRegistry} from '@/types/mattermost-webapp';
+export default class MattermostExtendChatUIPlugin {
+  #interval: NodeJS.Timeout | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+  public async initialize() {
+    // @see https://developers.mattermost.com/extend/plugins/webapp/reference/
+    detectDarkTheme();
+    this.#interval = setInterval(detectDarkTheme, 5000);
+  }
 
-export default class Plugin {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-    public async initialize(registry: PluginRegistry, store: Store<GlobalState, Action<Record<string, unknown>>>) {
-        // @see https://developers.mattermost.com/extend/plugins/webapp/reference/
+  uninitialize() {
+    if (this.#interval) {
+      clearInterval(this.#interval);
     }
+  }
 }
 
 declare global {
-    interface Window {
-        registerPlugin(pluginId: string, plugin: Plugin): void;
-    }
+  interface Window {
+    registerPlugin(
+      pluginId: string,
+      plugin: MattermostExtendChatUIPlugin
+    ): void;
+  }
 }
 
-window.registerPlugin(manifest.id, new Plugin());
+window.registerPlugin(manifest.id, new MattermostExtendChatUIPlugin());

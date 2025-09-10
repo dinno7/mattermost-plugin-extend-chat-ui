@@ -1,6 +1,7 @@
 {
   "root": true,
-  "extends": [
-    "plugin:@mattermost/react"
-  ]
+  "extends": ["plugin:@mattermost/react"],
+  "rules": {
+    "no-consoler": "off"
+  }
 }
